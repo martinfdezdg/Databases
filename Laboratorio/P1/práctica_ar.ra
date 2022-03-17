@@ -1,0 +1,89 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1671\cocoasubrtf600
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 /abolish\
+/multiline on\
+\
+-- Para procesar este archivo (se puede especificar tambi\'e9n la ruta): /process datos.ra\
+-- Antes deb\'e9is crear las relaciones (tablas).\
+-- Falta la \'faltima tupla de cada tabla y deb\'e9is escribir vosotros la instrucci\'f3n de inserci\'f3n en cada caso\
+\
+create table programadores(dni string primary key, nombre string, direcci\'f3n string, tel\'e9fono string);\
+\
+insert into programadores(dni, nombre, direcci\'f3n, tel\'e9fono) values('1','Jacinto','Jazm\'edn 4','91-8888888');\
+insert into programadores(dni, nombre, direcci\'f3n, tel\'e9fono) values('2','Herminia','Rosa 4','91-7777777');\
+insert into programadores(dni, nombre, direcci\'f3n, tel\'e9fono) values('3','Calixto','Clavel 3','91-1231231');\
+insert into programadores(dni, nombre, direcci\'f3n, tel\'e9fono) values('4','Teodora','Petunia 3','91-6666666');\
+\
+create table analistas(dni string primary key, nombre string, direcci\'f3n string, tel\'e9fono string);\
+\
+insert into analistas(dni, nombre, direcci\'f3n, tel\'e9fono) values('4','Teodora','Petunia 3','91-6666666');\
+insert into analistas(dni, nombre, direcci\'f3n, tel\'e9fono)\
+values('5','Evaristo','Luna 1','91-1111111');\
+insert into analistas(dni, nombre, direcci\'f3n, tel\'e9fono) values('6','Luciana','J\'fapiter 2','91-8888888');\
+insert into analistas(dni, nombre, direcci\'f3n, tel\'e9fono) values('7','Nicodemo','Plut\'f3n 3',null);\
+\
+-- Para crear una clave primaria de m\'e1s de un atributo hay que a\'f1adir al final como si fuese otro campo lo siguiente: primary key (c\'f3digopr, dniemp)\
+\
+create table distribuci\'f3n(c\'f3digopr string, dniemp string, horas int, primary key (c\'f3digopr, dniemp));\
+\
+insert into distribuci\'f3n(c\'f3digopr, dniemp, horas) values('P1','1',10);\
+insert into distribuci\'f3n(c\'f3digopr, dniemp, horas) values('P1','2',40);\
+insert into distribuci\'f3n(c\'f3digopr, dniemp, horas) values('P1','4',5);\
+insert into distribuci\'f3n(c\'f3digopr, dniemp, horas) values('P2','4',10);\
+insert into distribuci\'f3n(c\'f3digopr, dniemp, horas) values('P3','1',10);\
+insert into distribuci\'f3n(c\'f3digopr, dniemp, horas) values('P3','3',40);\
+insert into distribuci\'f3n(c\'f3digopr, dniemp, horas) values('P3','4',5);\
+insert into distribuci\'f3n(c\'f3digopr, dniemp, horas) values('P3','5',30);\
+insert into distribuci\'f3n(c\'f3digopr, dniemp, horas) values('P4','4',20);\
+insert into distribuci\'f3n(c\'f3digopr, dniemp, horas) values('P4','5',10);\
+\
+create table proyectos(c\'f3digo string primary key, descripci\'f3n string, dnidir string);\
+\
+insert into proyectos(c\'f3digo, descripci\'f3n, dnidir) values('P1','N\'f3mina','4');\
+insert into proyectos(c\'f3digo, descripci\'f3n, dnidir) values('P2','Contabilidad','4');\
+insert into proyectos(c\'f3digo, descripci\'f3n, dnidir) values('P3','Producci\'f3n','5');\
+insert into proyectos(c\'f3digo, descripci\'f3n, dnidir) values('P4','Clientes','5');\
+insert into proyectos(c\'f3digo, descripci\'f3n, dnidir) values('P5','Ventas','6');\
+\
+/*VISTA1*/\
+empTotales := programadores union analistas;\
+vista1 := project dni (empTotales);\
+\
+/*VISTA2*/\
+empProgAna := programadores intersect analistas;\
+vista2 := project dni (empProgAna);\
+\
+/*VISTA3*/\
+dniEmpConTrabajo := project dnidir (proyectos) union project dniemp (distribuci\'f3n);\
+vista3 := project dni (empTotales) difference dniEmpConTrabajo;\
+\
+/*VISTA4*/\
+c\'f3digos := project c\'f3digopr (distribuci\'f3n);\
+c\'f3digosProyectoConAna := project c\'f3digopr (select dniemp=dni (distribuci\'f3n product analistas));\
+vista4 := c\'f3digos difference c\'f3digosProyectoConAna;\
+\
+/*VISTA5*/\
+vista5 := project dnidir (proyectos) intersect project dni (analistas difference empProgAna);\
+\
+/*VISTA6*/\
+vista6 := project descripci\'f3n, nombre, horas (select c\'f3digo=c\'f3digopr (proyectos product (select dniemp=dni (distribuci\'f3n product programadores))));\
+\
+/*VISTA7*/\
+infoEmpleados := (rename empTotales1(dni1,nombre1,direcci\'f3n1,tel1) (empTotales)) product (rename empTotales2(dni2,nombre2,direcci\'f3n2,tel2) (empTotales));\
+infoNoRepetidaEmpleados := select dni1!=dni2 (infoEmpleados);\
+vista7 := project tel1 (select tel1=tel2 (infoNoRepetidaEmpleados));\
+\
+select true (vista1);\
+select true (vista2);\
+select true (vista3);\
+select true (vista4);\
+select true (vista5);\
+select true (vista6);\
+select true (vista7);\
+\
+}
